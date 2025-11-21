@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kleim Tutar Hesaplayıcı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+            --primary-color: #4361ee;
+            --primary-hover: #3f37c9;
+            --danger-color: #ef233c;
+            --danger-hover: #d90429;
+            --text-color: #2b2d42;
+            --labor-gradient: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+            --parts-gradient: linear-gradient(135deg, #f72585 0%, #7209b7 100%);
+            --total-gradient: linear-gradient(135deg, #06d6a0 0%, #118ab2 100%);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            padding: 20px;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace; /* Hizalamalar bozulmasın diye monospace */
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.3s;
+            background-color: #fafafa;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-calc {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        .btn-calc:hover { background-color: var(--primary-hover); }
+
+        .btn-clear {
+            background-color: var(--danger-color);
+            box-shadow: 0 4px 15px rgba(239, 35, 60, 0.3);
+        }
+        .btn-clear:hover { background-color: var(--danger-hover); }
+
+        .results {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            opacity: 0; /* Animasyon için gizli başlar */
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .results.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card {
+            flex: 1;
+            min-width: 220px;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .bg-labor { background: var(--labor-gradient); }
+        .bg-parts { background: var(--parts-gradient); }
+        .bg-total { background: var(--total-gradient); }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .card .amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .log-area {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #555;
+            border: 1px solid #eee;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-item { padding: 4px 0; border-bottom: 1px dashed #e0e0e0; }
+        .log-item:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧾 Kleim Tutar Hesaplayıcı</h1>
+    
+    <div class="input-group">
+        <textarea id="inputText" placeholder="Bilgileri buraya yapıştırın..."></textarea>
+    </div>
+    
+    <div class="btn-container">
+	<button onclick="temizle()" class="btn-clear">🗑️ TEMİZLE</button>
+        <button onclick="hesapla()" class="btn-calc">🚀 HESAPLA</button>
+    </div>
+
+    <div class="results" id="resultArea">
+        <div class="card bg-labor">
+            <h3>İşçilik Toplamı</h3>
+            <div class="amount" id="laborTotal">0,00 ₺</div>
+        </div>
+        <div class="card bg-parts">
+            <h3>Parça Toplamı</h3>
+            <div class="amount" id="partsTotal">0,00 ₺</div>
+        </div>
+        <div class="card bg-total">
+            <h3>GENEL TOPLAM</h3>
+            <div class="amount" id="grandTotal">0,00 ₺</div>
+        </div>
+    </div>
+
+    <div class="log-area" id="logArea" style="display:none;"></div>
+</div>
+
+<script>
+    function hesapla() {
+        const text = document.getElementById('inputText').value;
+        
+        if(!text.trim()) {
+            alert("Lütfen önce metin yapıştırın!");
+            return;
+        }
+
+        // Türkçe para formatı çevirici
+        const parseMoney = (str) => {
+            if (!str) return 0;
+            let cleanStr = str.replace(/\./g, '').replace(',', '.');
+            return parseFloat(cleanStr);
+        };
+
+        // Regex Tanımları
+        // Süre x Saat Ücreti mantığı
+        const laborCalcRegex = /Süre\s*([0-9,]+).*?İşçilik Saat Ücreti:?\s*([0-9.,]+)/gi;
+        // Parça bulma mantığı
+        const partsRegex = /Arıza Parça Tutarı\s*([\d\.]+(?:,\d{1,2})?)/gi;
+
+        let laborSum = 0;
+        let partsSum = 0;
+        let logHtml = "<strong>🔍 HESAPLAMA DETAYLARI:</strong><br>";
+
+        // İşçilik Hesaplama
+        let match;
+        while ((match = laborCalcRegex.exec(text)) !== null) {
+            let sure = parseMoney(match[1]);
+            let ucret = parseMoney(match[2]);
+            let satirTutari = sure * ucret;
+
+            laborSum += satirTutari;
+            logHtml += `<div class='log-item'>🛠️ İşçilik: ${match[1]} br x ${match[2]} ₺ = <strong>${satirTutari.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
+        }
+
+        // Parça Hesaplama
+        while ((match = partsRegex.exec(text)) !== null) {
+            let val = parseMoney(match[1]);
+            partsSum += val;
+            logHtml += `<div class='log-item'>🔩 Parça: <strong>${val.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
+        }
+
+        // Sonuçları Ekrana Basma
+        const formatTR = (num) => num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+
+        document.getElementById('laborTotal').innerText = formatTR(laborSum);
+        document.getElementById('partsTotal').innerText = formatTR(partsSum);
+        document.getElementById('grandTotal').innerText = formatTR(laborSum + partsSum);
+        
+        // Sonuç alanını görünür yap
+        const resultArea = document.getElementById('resultArea');
+        resultArea.style.display = 'flex';
+        setTimeout(() => { resultArea.classList.add('show'); }, 10);
+        
+        document.getElementById('logArea').style.display = 'block';
+        document.getElementById('logArea').innerHTML = logHtml;
+    }
+
+    function temizle() {
+        // Girdiyi sil
+        document.getElementById('inputText').value = '';
+        
+        // Sonuçları sıfırla
+        document.getElementById('laborTotal').innerText = '0,00 ₺';
+        document.getElementById('partsTotal').innerText = '0,00 ₺';
+        document.getElementById('grandTotal').innerText = '0,00 ₺';
+        
+        // Alanları gizle
+        const resultArea = document.getElementById('resultArea');
+        resultArea.classList.remove('show');
+        
+        // Logları temizle
+        document.getElementById('logArea').innerHTML = '';
+        document.getElementById('logArea').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
