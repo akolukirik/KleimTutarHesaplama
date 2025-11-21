@@ -17,6 +17,7 @@
             --labor-gradient: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
             --parts-gradient: linear-gradient(135deg, #f72585 0%, #7209b7 100%);
             --total-gradient: linear-gradient(135deg, #06d6a0 0%, #118ab2 100%);
+            --diff-gradient: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%); /* Fark için yeni renk */
         }
 
         body {
@@ -47,21 +48,43 @@
             margin-bottom: 20px;
         }
 
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
         textarea {
             width: 100%;
             height: 150px;
             padding: 15px;
             border: 2px solid #e0e0e0;
             border-radius: 12px;
-            font-family: 'Courier New', monospace; /* Hizalamalar bozulmasın diye monospace */
+            font-family: 'Courier New', monospace;
             font-size: 14px;
             box-sizing: border-box;
             resize: vertical;
             transition: border-color 0.3s;
             background-color: #fafafa;
+            margin-bottom: 15px;
         }
 
-        textarea:focus {
+        /* Yeni Eklenen Input Stili */
+        .manual-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 18px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            background-color: #fafafa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        textarea:focus, .manual-input:focus {
             outline: none;
             border-color: var(--primary-color);
             background-color: #fff;
@@ -70,6 +93,7 @@
         .btn-container {
             display: flex;
             gap: 15px;
+            margin-bottom: 30px;
         }
 
         button {
@@ -101,12 +125,11 @@
         .btn-clear:hover { background-color: var(--danger-hover); }
 
         .results {
-            margin-top: 30px;
             display: flex;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 20px;
-            opacity: 0; /* Animasyon için gizli başlar */
+            opacity: 0;
             transform: translateY(20px);
             transition: all 0.5s ease;
         }
@@ -118,8 +141,8 @@
 
         .card {
             flex: 1;
-            min-width: 220px;
-            padding: 25px;
+            min-width: 200px;
+            padding: 20px;
             border-radius: 16px;
             text-align: center;
             color: white;
@@ -129,17 +152,18 @@
         .bg-labor { background: var(--labor-gradient); }
         .bg-parts { background: var(--parts-gradient); }
         .bg-total { background: var(--total-gradient); }
+        .bg-diff  { background: var(--diff-gradient); } /* Yeni renk sınıfı */
 
         .card h3 {
             margin: 0 0 10px 0;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 1px;
             opacity: 0.9;
         }
 
         .card .amount {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
         }
 
@@ -165,12 +189,17 @@
     <h1>🧾 Kleim Tutar Hesaplayıcı</h1>
     
     <div class="input-group">
+        <label>1. Veri Yapıştırma Alanı:</label>
         <textarea id="inputText" placeholder="Bilgileri buraya yapıştırın..."></textarea>
     </div>
     
     <div class="btn-container">
-	<button onclick="temizle()" class="btn-clear">🗑️ TEMİZLE</button>
+        <button onclick="temizle()" class="btn-clear">🗑️ TEMİZLE</button>
         <button onclick="hesapla()" class="btn-calc">🚀 HESAPLA</button>
+    </div>
+
+    <div class="input-group" id="manualInputGroup" style="display:none;"> <label>2. Kleim Parça Yekün (Karşılaştırma İçin):</label>
+        <input type="text" id="manualPartInput" class="manual-input" placeholder="Örn: 1.250,50" onkeyup="farkHesapla()">
     </div>
 
     <div class="results" id="resultArea">
@@ -179,12 +208,15 @@
             <div class="amount" id="laborTotal">0,00 ₺</div>
         </div>
         <div class="card bg-parts">
-            <h3>Parça Toplamı</h3>
-            <div class="amount" id="partsTotal">0,00 ₺</div>
+            <h3>Parça Toplamı</h3> <div class="amount" id="partsTotal">0,00 ₺</div>
         </div>
         <div class="card bg-total">
             <h3>GENEL TOPLAM</h3>
             <div class="amount" id="grandTotal">0,00 ₺</div>
+        </div>
+        <div class="card bg-diff">
+            <h3>PARÇA FARKI</h3>
+            <div class="amount" id="diffTotal">0,00 ₺</div>
         </div>
     </div>
 
@@ -192,6 +224,21 @@
 </div>
 
 <script>
+    // Global değişken: Hesaplanan parça tutarını burada saklayacağız
+    let hesaplananParcaTutar = 0;
+
+    // Yardımcı Fonksiyon: Para formatı çevirici
+    const parseMoney = (str) => {
+        if (!str) return 0;
+        if(typeof str === 'number') return str;
+        
+        let cleanStr = str.toString().replace(/\./g, '').replace(',', '.');
+        let result = parseFloat(cleanStr);
+        return isNaN(result) ? 0 : result;
+    };
+
+    const formatTR = (num) => num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+
     function hesapla() {
         const text = document.getElementById('inputText').value;
         
@@ -200,17 +247,8 @@
             return;
         }
 
-        // Türkçe para formatı çevirici
-        const parseMoney = (str) => {
-            if (!str) return 0;
-            let cleanStr = str.replace(/\./g, '').replace(',', '.');
-            return parseFloat(cleanStr);
-        };
-
         // Regex Tanımları
-        // Süre x Saat Ücreti mantığı
         const laborCalcRegex = /Süre\s*([0-9,]+).*?İşçilik Saat Ücreti:?\s*([0-9.,]+)/gi;
-        // Parça bulma mantığı
         const partsRegex = /Arıza Parça Tutarı\s*([\d\.]+(?:,\d{1,2})?)/gi;
 
         let laborSum = 0;
@@ -235,34 +273,62 @@
             logHtml += `<div class='log-item'>🔩 Parça: <strong>${val.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
         }
 
-        // Sonuçları Ekrana Basma
-        const formatTR = (num) => num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+        // Global değişkene ata (Fark hesaplaması için bunu kullanacağız)
+        hesaplananParcaTutar = partsSum;
 
+        // Sonuçları Ekrana Basma
         document.getElementById('laborTotal').innerText = formatTR(laborSum);
         document.getElementById('partsTotal').innerText = formatTR(partsSum);
         document.getElementById('grandTotal').innerText = formatTR(laborSum + partsSum);
         
-        // Sonuç alanını görünür yap
+        // Sonuç alanını ve Manuel Giriş alanını görünür yap
         const resultArea = document.getElementById('resultArea');
         resultArea.style.display = 'flex';
+        document.getElementById('manualInputGroup').style.display = 'block'; // Giriş kutusunu aç
+        
         setTimeout(() => { resultArea.classList.add('show'); }, 10);
         
         document.getElementById('logArea').style.display = 'block';
         document.getElementById('logArea').innerHTML = logHtml;
+
+        // Eğer önceden fark kutusunda bir şey varsa tekrar hesaplat
+        farkHesapla();
+    }
+
+    function farkHesapla() {
+        // Kullanıcının girdiği değeri al
+        let girilenDegerStr = document.getElementById('manualPartInput').value;
+        
+        if(girilenDegerStr.trim() === "") {
+            document.getElementById('diffTotal').innerText = "0,00 ₺";
+            return;
+        }
+
+        let girilenDeger = parseMoney(girilenDegerStr);
+
+        let fark = girilenDeger - hesaplananParcaTutar;
+
+        document.getElementById('diffTotal').innerText = formatTR(fark);
     }
 
     function temizle() {
-        // Girdiyi sil
+        // Girdileri sil
         document.getElementById('inputText').value = '';
+        document.getElementById('manualPartInput').value = ''; // Manuel girişi de sil
         
         // Sonuçları sıfırla
         document.getElementById('laborTotal').innerText = '0,00 ₺';
         document.getElementById('partsTotal').innerText = '0,00 ₺';
         document.getElementById('grandTotal').innerText = '0,00 ₺';
+        document.getElementById('diffTotal').innerText = '0,00 ₺'; // Farkı sıfırla
         
+        // Değişkeni sıfırla
+        hesaplananParcaTutar = 0;
+
         // Alanları gizle
         const resultArea = document.getElementById('resultArea');
         resultArea.classList.remove('show');
+        document.getElementById('manualInputGroup').style.display = 'none'; // Manuel girişi gizle
         
         // Logları temizle
         document.getElementById('logArea').innerHTML = '';
