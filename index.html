@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* --- KOYU TEMA RENKLERİ --- */
+            /* --- KOYU TEMA --- */
             --bg-color: #121212;
             --container-bg: #1e1e1e;
             --input-bg: #2d2d2d;
@@ -15,12 +15,11 @@
             --text-color: #e0e0e0;
             --text-muted: #a0a0a0;
             
-            /* Gradyanlar */
+            /* Renkler */
             --labor-gradient: linear-gradient(135deg, #006266 0%, #009432 100%);
             --parts-gradient: linear-gradient(135deg, #5758BB 0%, #1B1464 100%);
             --total-gradient: linear-gradient(135deg, #1289A7 0%, #0652DD 100%);
             
-            /* Durum Renkleri */
             --diff-neutral: linear-gradient(135deg, #4b4b4b 0%, #2d3436 100%);
             --diff-success: linear-gradient(135deg, #009432 0%, #20bf6b 100%);
             --diff-warning: linear-gradient(135deg, #F79F1F 0%, #EE5A24 100%);
@@ -134,7 +133,7 @@
         }
         .btn-clear:hover { background-color: var(--danger-btn-hover); }
 
-        /* GRID DÜZENİ */
+        /* GRID */
         .results {
             display: grid;
             grid-template-columns: repeat(3, 1fr); 
@@ -144,9 +143,7 @@
             transition: all 0.5s ease;
         }
 
-        .full-width-card {
-            grid-column: 1 / -1; 
-        }
+        .full-width-card { grid-column: 1 / -1; }
 
         @media (max-width: 768px) {
             .results { grid-template-columns: 1fr; }
@@ -221,13 +218,23 @@
         }
         
         .log-item { padding: 5px 0; border-bottom: 1px solid #333; }
-        .log-item:last-child { border-bottom: none; }
         
+        /* Yanıp sönme animasyonu */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(234, 32, 39, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(234, 32, 39, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 32, 39, 0); }
+        }
+
+        .warning-active {
+            border: 1px solid #EA2027 !important;
+            animation: pulse-red 2s infinite;
+        }
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1e1e1e; }
         ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
-
     </style>
 </head>
 <body>
@@ -243,6 +250,12 @@
     <div class="btn-container">
         <button onclick="temizle()" class="btn-clear">🗑️ TEMİZLE</button>
         <button onclick="hesapla()" class="btn-calc">🚀 HESAPLA</button>
+    </div>
+
+    <div class="input-group" id="manualLaborGroup" style="display:none;">
+        <label style="color: #ff6b6b; font-weight: bold;">🚫 9910A TESPİT EDİLDİ - OTOMATİK HESAPLANMADI!</label>
+        <label>Lütfen harici işçilik fatura tutarını manuel giriniz:</label>
+        <input type="text" id="manualLaborInput" class="manual-input warning-active" placeholder="Örn: 1.679,17" onkeyup="toplamlariGuncelle()">
     </div>
 
     <div class="input-group" id="manualInputGroup" style="display:none;">
@@ -275,8 +288,9 @@
 </div>
 
 <script>
-    // Global değişken: Sadece Parça tutarını saklayacağız
+    // Global Değişkenler
     let hesaplananParcaTutar = 0;
+    let otomatikIscilikTutar = 0; 
 
     const parseMoney = (str) => {
         if (!str) return 0;
@@ -301,44 +315,73 @@
 
         let laborSum = 0;
         let partsSum = 0;
-        let logHtml = "<strong>🔍 HESAPLAMA DETAYLARI:</strong><br>";
+        let logHtml = "<strong>🔍 HESAPLAMA LOGLARI:</strong><br>";
 
-        // İşçilik
+        // --- İŞÇİLİK DÖNGÜSÜ ---
         let match;
         while ((match = laborCalcRegex.exec(text)) !== null) {
+            
+            let startPos = Math.max(0, match.index - 80);
+            let checkZone = text.substring(startPos, match.index);
+
             let sure = parseMoney(match[1]);
             let ucret = parseMoney(match[2]);
             let satirTutari = sure * ucret;
-            laborSum += satirTutari;
-            logHtml += `<div class='log-item'>🛠️ İşçilik: ${match[1]} br x ${match[2]} ₺ = <strong>${satirTutari.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
+
+            // 2. ADIM: Bu parçada "9910A" var mı?
+            if (checkZone.toUpperCase().includes("9910A")) {
+                // VARSA: HESAPLAMA! (Reddet)
+                logHtml += `<div class='log-item' style='color: #ff6b6b; text-decoration: line-through;'>🚫 BLOKLANDI (9910A): ${match[1]} x ${match[2]} = ${satirTutari.toLocaleString('tr-TR')} ₺</div>`;
+                // laborSum += satirTutari;  <-- BU SATIR ARTIK ÇALIŞMIYOR
+            } else {
+                // YOKSA: Normal Hesapla
+                laborSum += satirTutari;
+                logHtml += `<div class='log-item' style='color: #4cd137;'>✅ Eklendi: ${match[1]} x ${match[2]} = <strong>${satirTutari.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
+            }
         }
 
-        // Parça
+        // --- PARÇA DÖNGÜSÜ ---
         while ((match = partsRegex.exec(text)) !== null) {
             let val = parseMoney(match[1]);
             partsSum += val;
             logHtml += `<div class='log-item'>🔩 Parça: <strong>${val.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
         }
         
-        let grandTotal = laborSum + partsSum;
-        
-        // ÖNEMLİ DEĞİŞİKLİK: Fark hesabı için PARÇA toplamını hafızaya atıyoruz
+        otomatikIscilikTutar = laborSum;
         hesaplananParcaTutar = partsSum;
 
-        document.getElementById('laborTotal').innerText = formatTR(laborSum);
-        document.getElementById('partsTotal').innerText = formatTR(partsSum);
-        document.getElementById('grandTotal').innerText = formatTR(grandTotal);
-        
+        // --- 9910A GENEL KONTROLÜ (Giriş Kutusunu Açmak İçin) ---
+        if (text.toUpperCase().includes("9910A")) {
+            document.getElementById('manualLaborGroup').style.display = 'block';
+            logHtml += `<div class='log-item' style='color: #ff6b6b; border-top: 1px solid #444; margin-top:5px; padding-top:5px;'><strong>⚠️ SİSTEM UYARISI:</strong> 9910A algılandı ve otomatik hesaptan çıkarıldı. Manuel giriş bekleniyor.</div>`;
+        } else {
+            document.getElementById('manualLaborGroup').style.display = 'none';
+            document.getElementById('manualLaborInput').value = ''; 
+        }
+
         const resultArea = document.getElementById('resultArea');
         resultArea.style.display = 'grid'; 
         document.getElementById('manualInputGroup').style.display = 'block';
-        
-        setTimeout(() => { resultArea.classList.add('show'); }, 10);
-        
         document.getElementById('logArea').style.display = 'block';
         document.getElementById('logArea').innerHTML = logHtml;
+        
+        setTimeout(() => { resultArea.classList.add('show'); }, 10);
 
+        toplamlariGuncelle();
         farkHesapla();
+    }
+
+    function toplamlariGuncelle() {
+        let manuelIscilikStr = document.getElementById('manualLaborInput').value;
+        let manuelIscilik = parseMoney(manuelIscilikStr);
+
+        // Toplam İşçilik = Otomatik (9910A hariç diğerleri) + Manuel Girilen
+        let toplamIscilik = otomatikIscilikTutar + manuelIscilik;
+        let genelToplam = toplamIscilik + hesaplananParcaTutar;
+
+        document.getElementById('laborTotal').innerText = formatTR(toplamIscilik);
+        document.getElementById('partsTotal').innerText = formatTR(hesaplananParcaTutar);
+        document.getElementById('grandTotal').innerText = formatTR(genelToplam);
     }
 
     function farkHesapla() {
@@ -354,8 +397,6 @@
         }
 
         let girilenDeger = parseMoney(girilenDegerStr);
-        
-        // DEĞİŞİKLİK: Girilen Değer - Parça Toplamı
         let fark = girilenDeger - hesaplananParcaTutar;
 
         document.getElementById('diffTotal').innerText = formatTR(fark);
@@ -379,6 +420,7 @@
     function temizle() {
         document.getElementById('inputText').value = '';
         document.getElementById('manualPartInput').value = '';
+        document.getElementById('manualLaborInput').value = '';
         
         document.getElementById('laborTotal').innerText = '0,00 ₺';
         document.getElementById('partsTotal').innerText = '0,00 ₺';
@@ -389,10 +431,12 @@
         document.getElementById('diffStatus').innerText = "Veri Bekleniyor";
 
         hesaplananParcaTutar = 0;
+        otomatikIscilikTutar = 0;
 
         const resultArea = document.getElementById('resultArea');
         resultArea.classList.remove('show');
         document.getElementById('manualInputGroup').style.display = 'none';
+        document.getElementById('manualLaborGroup').style.display = 'none';
         
         document.getElementById('logArea').innerHTML = '';
         document.getElementById('logArea').style.display = 'none';
