@@ -7,17 +7,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #eef2f5;
-            --card-bg: #ffffff;
-            --primary-color: #4361ee;
-            --primary-hover: #3f37c9;
-            --danger-color: #ef233c;
-            --danger-hover: #d90429;
-            --text-color: #2b2d42;
-            --labor-gradient: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
-            --parts-gradient: linear-gradient(135deg, #f72585 0%, #7209b7 100%);
-            --total-gradient: linear-gradient(135deg, #06d6a0 0%, #118ab2 100%);
-            --diff-gradient: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%); /* Fark için yeni renk */
+            /* --- KOYU TEMA RENKLERİ --- */
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --input-bg: #2d2d2d;
+            --border-color: #404040;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            
+            /* Gradyanlar */
+            --labor-gradient: linear-gradient(135deg, #006266 0%, #009432 100%);
+            --parts-gradient: linear-gradient(135deg, #5758BB 0%, #1B1464 100%);
+            --total-gradient: linear-gradient(135deg, #1289A7 0%, #0652DD 100%);
+            
+            /* Durum Renkleri */
+            --diff-neutral: linear-gradient(135deg, #4b4b4b 0%, #2d3436 100%);
+            --diff-success: linear-gradient(135deg, #009432 0%, #20bf6b 100%);
+            --diff-warning: linear-gradient(135deg, #F79F1F 0%, #EE5A24 100%);
+            --diff-danger:  linear-gradient(135deg, #EA2027 0%, #B53471 100%);
+            
+            --primary-btn: #3c6382;
+            --primary-btn-hover: #0a3d62;
+            --danger-btn: #b33939;
+            --danger-btn-hover: #8b0000;
         }
 
         body {
@@ -29,65 +41,65 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 40px auto;
-            background: var(--card-bg);
+            background: var(--container-bg);
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
         }
 
         h1 {
             text-align: center;
-            color: var(--text-color);
+            color: #fff;
             font-weight: 600;
             margin-bottom: 30px;
+            letter-spacing: 1px;
         }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
+        .input-group { margin-bottom: 20px; }
 
         label {
-            font-weight: 600;
+            font-weight: 500;
             display: block;
             margin-bottom: 8px;
-            color: #555;
+            color: var(--text-muted);
+            font-size: 14px;
         }
 
         textarea {
             width: 100%;
-            height: 150px;
+            height: 120px;
             padding: 15px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
             box-sizing: border-box;
             resize: vertical;
-            transition: border-color 0.3s;
-            background-color: #fafafa;
-            margin-bottom: 15px;
+            transition: all 0.3s;
+            background-color: var(--input-bg);
+            color: #fff;
         }
 
-        /* Yeni Eklenen Input Stili */
         .manual-input {
             width: 100%;
             padding: 15px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             font-size: 18px;
             box-sizing: border-box;
-            transition: border-color 0.3s;
-            background-color: #fafafa;
+            transition: all 0.3s;
+            background-color: var(--input-bg);
+            color: #fff;
             font-weight: bold;
-            color: #333;
         }
 
         textarea:focus, .manual-input:focus {
             outline: none;
-            border-color: var(--primary-color);
-            background-color: #fff;
+            border-color: #7efff5;
+            background-color: #353535;
         }
 
         .btn-container {
@@ -108,30 +120,37 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        button:active {
-            transform: scale(0.98);
-        }
+        button:active { transform: scale(0.98); }
 
         .btn-calc {
-            background-color: var(--primary-color);
-            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            background-color: var(--primary-btn);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .btn-calc:hover { background-color: var(--primary-hover); }
+        .btn-calc:hover { background-color: var(--primary-btn-hover); }
 
         .btn-clear {
-            background-color: var(--danger-color);
-            box-shadow: 0 4px 15px rgba(239, 35, 60, 0.3);
+            background-color: var(--danger-btn);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .btn-clear:hover { background-color: var(--danger-hover); }
+        .btn-clear:hover { background-color: var(--danger-btn-hover); }
 
+        /* GRID DÜZENİ */
         .results {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
             gap: 20px;
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.5s ease;
+        }
+
+        .full-width-card {
+            grid-column: 1 / -1; 
+        }
+
+        @media (max-width: 768px) {
+            .results { grid-template-columns: 1fr; }
+            .full-width-card { grid-column: auto; }
         }
 
         .results.show {
@@ -140,47 +159,75 @@
         }
 
         .card {
-            flex: 1;
-            min-width: 200px;
             padding: 20px;
             border-radius: 16px;
             text-align: center;
             color: white;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: background 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .bg-labor { background: var(--labor-gradient); }
         .bg-parts { background: var(--parts-gradient); }
         .bg-total { background: var(--total-gradient); }
-        .bg-diff  { background: var(--diff-gradient); } /* Yeni renk sınıfı */
+        
+        .bg-diff-neutral { background: var(--diff-neutral); }
+        .bg-diff-success { background: var(--diff-success); }
+        .bg-diff-warning { background: var(--diff-warning); }
+        .bg-diff-danger  { background: var(--diff-danger); }
 
         .card h3 {
             margin: 0 0 10px 0;
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            opacity: 0.9;
+            opacity: 0.8;
+            font-weight: 400;
         }
 
         .card .amount {
             font-size: 24px;
             font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card .status-msg {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            background: rgba(0,0,0,0.4);
+            padding: 6px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .log-area {
             margin-top: 30px;
-            background-color: #f8f9fa;
+            background-color: #161616;
             padding: 15px;
             border-radius: 10px;
             font-size: 13px;
-            color: #555;
-            border: 1px solid #eee;
+            color: #888;
+            border: 1px solid #333;
             max-height: 200px;
             overflow-y: auto;
         }
         
-        .log-item { padding: 4px 0; border-bottom: 1px dashed #e0e0e0; }
+        .log-item { padding: 5px 0; border-bottom: 1px solid #333; }
         .log-item:last-child { border-bottom: none; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e1e1e; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
     </style>
 </head>
 <body>
@@ -198,7 +245,8 @@
         <button onclick="hesapla()" class="btn-calc">🚀 HESAPLA</button>
     </div>
 
-    <div class="input-group" id="manualInputGroup" style="display:none;"> <label>2. Kleim Parça Yekün (Karşılaştırma İçin):</label>
+    <div class="input-group" id="manualInputGroup" style="display:none;">
+        <label>2. Kleim Parça Yekün (Karşılaştırma İçin):</label>
         <input type="text" id="manualPartInput" class="manual-input" placeholder="Örn: 1.250,50" onkeyup="farkHesapla()">
     </div>
 
@@ -208,15 +256,18 @@
             <div class="amount" id="laborTotal">0,00 ₺</div>
         </div>
         <div class="card bg-parts">
-            <h3>Parça Toplamı</h3> <div class="amount" id="partsTotal">0,00 ₺</div>
+            <h3>Parça Toplamı</h3>
+            <div class="amount" id="partsTotal">0,00 ₺</div>
         </div>
         <div class="card bg-total">
-            <h3>GENEL TOPLAM</h3>
+            <h3>GENEL TOPLAM (BOS)</h3>
             <div class="amount" id="grandTotal">0,00 ₺</div>
         </div>
-        <div class="card bg-diff">
-            <h3>PARÇA FARKI</h3>
+        
+        <div class="card bg-diff-neutral full-width-card" id="diffCard">
+            <h3>PARÇA TUTAR FARKI</h3>
             <div class="amount" id="diffTotal">0,00 ₺</div>
+            <div class="status-msg" id="diffStatus">Veri Bekleniyor</div>
         </div>
     </div>
 
@@ -224,14 +275,12 @@
 </div>
 
 <script>
-    // Global değişken: Hesaplanan parça tutarını burada saklayacağız
+    // Global değişken: Sadece Parça tutarını saklayacağız
     let hesaplananParcaTutar = 0;
 
-    // Yardımcı Fonksiyon: Para formatı çevirici
     const parseMoney = (str) => {
         if (!str) return 0;
         if(typeof str === 'number') return str;
-        
         let cleanStr = str.toString().replace(/\./g, '').replace(',', '.');
         let result = parseFloat(cleanStr);
         return isNaN(result) ? 0 : result;
@@ -247,7 +296,6 @@
             return;
         }
 
-        // Regex Tanımları
         const laborCalcRegex = /Süre\s*([0-9,]+).*?İşçilik Saat Ücreti:?\s*([0-9.,]+)/gi;
         const partsRegex = /Arıza Parça Tutarı\s*([\d\.]+(?:,\d{1,2})?)/gi;
 
@@ -255,82 +303,97 @@
         let partsSum = 0;
         let logHtml = "<strong>🔍 HESAPLAMA DETAYLARI:</strong><br>";
 
-        // İşçilik Hesaplama
+        // İşçilik
         let match;
         while ((match = laborCalcRegex.exec(text)) !== null) {
             let sure = parseMoney(match[1]);
             let ucret = parseMoney(match[2]);
             let satirTutari = sure * ucret;
-
             laborSum += satirTutari;
             logHtml += `<div class='log-item'>🛠️ İşçilik: ${match[1]} br x ${match[2]} ₺ = <strong>${satirTutari.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
         }
 
-        // Parça Hesaplama
+        // Parça
         while ((match = partsRegex.exec(text)) !== null) {
             let val = parseMoney(match[1]);
             partsSum += val;
             logHtml += `<div class='log-item'>🔩 Parça: <strong>${val.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</strong></div>`;
         }
-
-        // Global değişkene ata (Fark hesaplaması için bunu kullanacağız)
+        
+        let grandTotal = laborSum + partsSum;
+        
+        // ÖNEMLİ DEĞİŞİKLİK: Fark hesabı için PARÇA toplamını hafızaya atıyoruz
         hesaplananParcaTutar = partsSum;
 
-        // Sonuçları Ekrana Basma
         document.getElementById('laborTotal').innerText = formatTR(laborSum);
         document.getElementById('partsTotal').innerText = formatTR(partsSum);
-        document.getElementById('grandTotal').innerText = formatTR(laborSum + partsSum);
+        document.getElementById('grandTotal').innerText = formatTR(grandTotal);
         
-        // Sonuç alanını ve Manuel Giriş alanını görünür yap
         const resultArea = document.getElementById('resultArea');
-        resultArea.style.display = 'flex';
-        document.getElementById('manualInputGroup').style.display = 'block'; // Giriş kutusunu aç
+        resultArea.style.display = 'grid'; 
+        document.getElementById('manualInputGroup').style.display = 'block';
         
         setTimeout(() => { resultArea.classList.add('show'); }, 10);
         
         document.getElementById('logArea').style.display = 'block';
         document.getElementById('logArea').innerHTML = logHtml;
 
-        // Eğer önceden fark kutusunda bir şey varsa tekrar hesaplat
         farkHesapla();
     }
 
     function farkHesapla() {
-        // Kullanıcının girdiği değeri al
         let girilenDegerStr = document.getElementById('manualPartInput').value;
-        
+        let diffCard = document.getElementById('diffCard');
+        let diffStatus = document.getElementById('diffStatus');
+
         if(girilenDegerStr.trim() === "") {
             document.getElementById('diffTotal').innerText = "0,00 ₺";
+            diffCard.className = "card bg-diff-neutral full-width-card";
+            diffStatus.innerText = "Veri Bekleniyor";
             return;
         }
 
         let girilenDeger = parseMoney(girilenDegerStr);
-
+        
+        // DEĞİŞİKLİK: Girilen Değer - Parça Toplamı
         let fark = girilenDeger - hesaplananParcaTutar;
 
         document.getElementById('diffTotal').innerText = formatTR(fark);
+
+        diffCard.className = "card full-width-card"; 
+
+        if (Math.abs(fark) < 0.01) { 
+            diffCard.classList.add("bg-diff-success");
+            diffStatus.innerText = "✅ PARÇA TUTARI EŞİT";
+        } 
+        else if (fark < 0) {
+            diffCard.classList.add("bg-diff-danger");
+            diffStatus.innerText = "⚠️ ESİGİ PARÇA TUTARI DÜŞÜK";
+        } 
+        else {
+            diffCard.classList.add("bg-diff-warning");
+            diffStatus.innerText = "⚠️ ESİGİ PARÇA TUTARI BOSTAN FAZLA"; 
+        }
     }
 
     function temizle() {
-        // Girdileri sil
         document.getElementById('inputText').value = '';
-        document.getElementById('manualPartInput').value = ''; // Manuel girişi de sil
+        document.getElementById('manualPartInput').value = '';
         
-        // Sonuçları sıfırla
         document.getElementById('laborTotal').innerText = '0,00 ₺';
         document.getElementById('partsTotal').innerText = '0,00 ₺';
         document.getElementById('grandTotal').innerText = '0,00 ₺';
-        document.getElementById('diffTotal').innerText = '0,00 ₺'; // Farkı sıfırla
+        document.getElementById('diffTotal').innerText = '0,00 ₺';
         
-        // Değişkeni sıfırla
+        document.getElementById('diffCard').className = "card bg-diff-neutral full-width-card";
+        document.getElementById('diffStatus').innerText = "Veri Bekleniyor";
+
         hesaplananParcaTutar = 0;
 
-        // Alanları gizle
         const resultArea = document.getElementById('resultArea');
         resultArea.classList.remove('show');
-        document.getElementById('manualInputGroup').style.display = 'none'; // Manuel girişi gizle
+        document.getElementById('manualInputGroup').style.display = 'none';
         
-        // Logları temizle
         document.getElementById('logArea').innerHTML = '';
         document.getElementById('logArea').style.display = 'none';
     }
